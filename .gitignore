@@ -1,0 +1,8 @@
+*demo*
+pt_folder/
+onnx_folder/
+__pycache__/
+*.onnx
+*.jpg
+*.pt
+models/
