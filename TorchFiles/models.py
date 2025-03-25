@@ -49,16 +49,6 @@ class NMS(torch.nn.Module):
         boxes_and_scores = boxes_and_scores[boxes_and_scores[:,4] >= 0.25]
         return boxes_and_scores
 
-class gather_boxes_scores(torch.nn.Module):
-    def __init__(self):
-        super(gather_boxes_scores, self).__init__()
-
-    def forward(self, xyxy, person_conf):
-        # xyxy shape: [N,4]
-        # person_conf shape: [N]
-        boxes_and_scores = torch.cat((xyxy, person_conf.unsqueeze(1)), dim=1) # [N,5]
-        return boxes_and_scores
-
 class image_sender(torch.nn.Module):
     def __init__(self):
         super(image_sender, self).__init__()

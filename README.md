@@ -39,4 +39,18 @@ Her iki model için [**TorchFiles/models.py**](TorchFiles/models.py) dosyasında
 
 RTDETR ve YOLO12 modelleri yukarıda belirtilen fonksiyonlar ile birleştirilmiştir. Birleştirme işlemi modellerin saf çıkışları üzerinden olmuştur. **Feature-fusion** kullanılmammıştır.
 
+#### yolo_out_splitter
+![yolo_out_splitter](assests/yolo_out_splitter.onnx.svg)
+#### rtdetr_out_splitter
+![rtdetr_out_splitter](assests/rtdetr_out_splitter.onnx.svg)
+#### cxcywh2xyxy
+![cxcywh2xyxy](assests/cxcywh2xyxy.onnx.svg)
+#### NMS
+![NMS](assests/NMS.onnx.svg)
+#### YOLO_postprocess = yolo_out_splitter + cxcywh2xyxy + NMS
+![YOLO_postprocess](assests/YOLO_postprocess.onnx.svg)
+#### RTDETR_postprocess = rtdetr_out_splitter + cxcywh2xyxy + NMS
+![RTDETR_postprocess](assests/RTDETR_postprocess.onnx.svg)
+#### Ensemble_postprocess = yolo_out_splitter + rtdetr_out_splitter + cxcywh2xyxy + NMS
+![Ensemble_postprocess](assests/Ensemble_postprocess.onnx.svg)
 

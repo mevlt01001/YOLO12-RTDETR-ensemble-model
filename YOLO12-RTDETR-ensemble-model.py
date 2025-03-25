@@ -3,7 +3,7 @@ import onnx
 from onnxsim import simplify
 from snc4onnx import combine
 from sor4onnx import rename
-from models_to_onnx import model_to_onnx
+from models_to_onnx import convert
 from TorchFiles import image_sender, Ensemble_postprocess
 
 
@@ -15,7 +15,7 @@ raw_rtdetr_onnx = onnx.load("models/rtdetr-l.onnx")
 raw_rtdetr_onnx = rename(old_new=["images", "rtdetr_in"], onnx_graph=raw_rtdetr_onnx)
 raw_rtdetr_onnx = rename(old_new=["output0", "rtdetr_out"], onnx_graph=raw_rtdetr_onnx)
 
-image_sender_onnx = model_to_onnx(
+image_sender_onnx = convert(
     model=image_sender(),
     onnx_name="image_splitter.onnx",
     input_shape=[(1,3,640,640)],    
@@ -51,7 +51,7 @@ yolo_and_rtdetr, check  = simplify(yolo_and_rtdetr)
 print(f"Simplified: {check}")
 onnx.save(yolo_and_rtdetr, "onnx_folder/yolo_and_rtdetr.onnx")
 
-Ensemble_postprocess_onnx = model_to_onnx(
+Ensemble_postprocess_onnx = convert(
     model=Ensemble_postprocess(),
     onnx_name="Ensemble_postprocess.onnx",
     input_shape=[
