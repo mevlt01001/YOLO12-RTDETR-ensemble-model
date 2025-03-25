@@ -13,25 +13,25 @@ Bu işlemler [**TorchFiles/models.py**](TorchFiles/models.py) dosyasında `torch
 
 ## ONNX işlemleri:
 
-Her iki model için **TorchFiles/models.py** dosyasında tanımlanan post-process katmanları ONNX formatına çevrildikten sonra ilgili model ile birleştirme işlemi yapılır. Birleştirme işlemi yapılmadan varsa ONNX OP isim çakışmalarını önlenmek için ilgili operatör yeniden isimlendirilir ve birleştirilir.
+Her iki model için [**TorchFiles/models.py**](TorchFiles/models.py) dosyasında tanımlanan **post-process** katmanları ONNX formatına çevrildikten sonra ilgili model ile birleştirme işlemi yapılır. Birleştirme işlemi yapılmadan varsa ONNX OP isim çakışmalarını önlenmek için ilgili operatör yeniden isimlendirilir ve birleştirilir.
 
 ---
 
-### Model2ONNX
+### [Model2ONNX](models_to_onnx.py)
 
-**torch.nn.Module** sınıfından bir modeli ONNX formatına çevirmek için `model_to_onnx.py` doosyasındaki `convert` fonskiyonu kullanılır.
+**torch.nn.Module** sınıfından bir modeli ONNX formatına çevirmek için `model_to_onnx.py` doosyasındaki `model_to_onnx` fonskiyonu kullanılır.
 
 ---
 
 ### Yeniden isimlendirme:
 
-[**sor4onnx**]() aracı kullanılırarak istenilen ONNX modelindeki operatörlerin isimleri değiştirilir.
+[**sor4onnx**]("https://github.com/PINTO0309/sor4onnx") aracı kullanılırarak istenilen ONNX modelindeki operatörlerin isimleri değiştirilir.
 
 ---
 
 ### ONNX birleştirme:
 
-[**snc4onnx**]() aracı kullanılarak 2 vaye daha fazla model birleştirilir.
+[**snc4onnx**]("https://github.com/PINTO0309/snc4onnx") aracı kullanılarak 2 vaye daha fazla model birleştirilir.
 
 ---
 
