@@ -70,7 +70,6 @@ class image_sender(torch.nn.Module):
 class RTDETR_postprocess(torch.nn.Module):
     def __init__(self):
         super(RTDETR_postprocess, self).__init__()
-        self.yolo_out_splitter = yolo_out_splitter()
         self.rtdetr_out_splitter = rtdetr_out_splitter()
         self.cxcywh2xyxy = cxcywh2xyxy()
         self.NMS = NMS()
