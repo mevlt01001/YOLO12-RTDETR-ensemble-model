@@ -1,12 +1,12 @@
 import onnx ,os
 from snc4onnx import combine
-from models_to_onnx import model_to_onnx
+from models_to_onnx import convert
 from TorchFiles import YOLO_postprocess
 
 
 raw_yolo_onnx = onnx.load("models/yolo12l.onnx")
 
-YOLO_postprocess_onnx = model_to_onnx(
+YOLO_postprocess_onnx = convert(
     model=YOLO_postprocess(),
     onnx_name="YOLO_postprocess.onnx",
     input_shape=[(1,84,8400)],    
