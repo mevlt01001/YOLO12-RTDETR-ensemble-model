@@ -5,7 +5,7 @@ import torch, os
 onnx_folder_path = 'onnx_folder'
 os.makedirs(onnx_folder_path, exist_ok=True)
 
-def convert(model: torch.nn.Module,
+def model_to_onnx(model: torch.nn.Module,
                   onnx_name: str, 
                   input_shape: list[tuple], 
                   OPSET: int, 

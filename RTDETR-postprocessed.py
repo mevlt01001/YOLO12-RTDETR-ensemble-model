@@ -1,11 +1,11 @@
 import onnx ,os
 from snc4onnx import combine
-from models_to_onnx import convert
+from models_to_onnx import model_to_onnx
 from TorchFiles import RTDETR_postprocess
 
 raw_rtdetr_onnx = onnx.load("models/rtdetr-l.onnx")
 
-RTDETR_postprocess_onnx = convert(
+RTDETR_postprocess_onnx = model_to_onnx(
     model=RTDETR_postprocess(),
     onnx_name="RTDETR_postprocess.onnx",
     input_shape=[(1,300,84)],    
