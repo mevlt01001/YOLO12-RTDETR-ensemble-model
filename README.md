@@ -25,13 +25,13 @@ Her iki model için [**TorchFiles/models.py**](TorchFiles/models.py) dosyasında
 
 ### Yeniden isimlendirme:
 
-[**sor4onnx**]("https://github.com/PINTO0309/sor4onnx") aracı kullanılırarak istenilen ONNX modelindeki operatörlerin isimleri değiştirilir.
+[**sor4onnx**](https://github.com/PINTO0309/sor4onnx) aracı kullanılırarak istenilen ONNX modelindeki operatörlerin isimleri değiştirilir.
 
 ---
 
 ### ONNX birleştirme:
 
-[**snc4onnx**]("https://github.com/PINTO0309/snc4onnx") aracı kullanılarak 2 vaye daha fazla model birleştirilir.
+[**snc4onnx**](https://github.com/PINTO0309/snc4onnx) aracı kullanılarak 2 vaye daha fazla model birleştirilir.
 
 ---
 
