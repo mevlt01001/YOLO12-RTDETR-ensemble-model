@@ -9,7 +9,7 @@ Bu repository; Torch modellerinin ONNX formatına dönüşümünü, ONNX fomrat�
 
 Model çıkışları tek başına anlamlı değildir. Yeniden ölçeklendirme ve NMS adımları gereklidir. 
 
-Bu işlemler **TorchFiles/models.py** dosyasında `torch.nn.Module` sınıfı miras alınarak gerçekleştirilmiştir.
+Bu işlemler [**TorchFiles/models.py**]("TorchFiles/models.py") dosyasında `torch.nn.Module` sınıfı miras alınarak gerçekleştirilmiştir.
 
 ## ONNX işlemleri:
 
