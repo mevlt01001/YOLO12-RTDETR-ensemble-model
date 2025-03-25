@@ -66,3 +66,51 @@ class image_sender(torch.nn.Module):
     def forward(self, image):
         # image shape: [1,3,640,640]
         return image, image
+    
+class RTDETR_postprocess(torch.nn.Module):
+    def __init__(self):
+        super(RTDETR_postprocess, self).__init__()
+        self.yolo_out_splitter = yolo_out_splitter()
+        self.rtdetr_out_splitter = rtdetr_out_splitter()
+        self.cxcywh2xyxy = cxcywh2xyxy()
+        self.NMS = NMS()
+
+    def forward(self, rtdetr_raw_out):
+        # rtdetr_raw_out shape: [1,300,84]
+        cxcywh, person_conf = self.rtdetr_out_splitter(rtdetr_raw_out)
+        xyxy = self.cxcywh2xyxy(cxcywh)
+        boxes_and_scores = self.NMS(xyxy, person_conf)
+        return boxes_and_scores
+    
+class YOLO_postprocess(torch.nn.Module):
+    def __init__(self):
+        super(YOLO_postprocess, self).__init__()
+        self.yolo_out_splitter = yolo_out_splitter()
+        self.cxcywh2xyxy = cxcywh2xyxy()
+        self.NMS = NMS()
+
+    def forward(self, yolo_raw_out):
+        # yolo_raw_out shape: [1,84,8400]
+        cxcywh, person_conf = self.yolo_out_splitter(yolo_raw_out)
+        xyxy = self.cxcywh2xyxy(cxcywh)
+        boxes_and_scores = self.NMS(xyxy, person_conf)
+        return boxes_and_scores
+    
+class Ensemble_postprocess(torch.nn.Module):
+    def __init__(self):
+        super(Ensemble_postprocess, self).__init__()
+        self.yolo_out_splitter = yolo_out_splitter()
+        self.rtdetr_out_splitter = rtdetr_out_splitter()
+        self.cxcywh2xyxy = cxcywh2xyxy()
+        self.NMS = NMS()
+
+    def forward(self, yolo_raw_out, rtdetr_raw_out):
+        # yolo_raw_out shape: [1,84,8400]
+        # rtdetr_raw_out shape: [1,300,84]
+        yolo_cxcywh, yolo_person_conf = self.yolo_out_splitter(yolo_raw_out)
+        rtdetr_cxcywh, rtdetr_person_conf = self.rtdetr_out_splitter(rtdetr_raw_out)
+        cxcywh = torch.cat((yolo_cxcywh, rtdetr_cxcywh), dim=0)
+        xyxy = self.cxcywh2xyxy(cxcywh)
+        person_conf = torch.cat((yolo_person_conf, rtdetr_person_conf), dim=0)
+        boxes_and_scores = self.NMS(xyxy, person_conf)
+        return boxes_and_scores

@@ -1,8 +1,10 @@
-import onnx ,os
+import os
+import onnx
+from onnxsim import simplify
 from snc4onnx import combine
 from sor4onnx import rename
 from models_to_onnx import model_to_onnx
-from TorchFiles import image_sender, yolo_out_splitter, rtdetr_out_splitter, cxcywh2xyxy, NMS
+from TorchFiles import image_sender, Ensemble_postprocess
 
 
 raw_yolo_onnx = onnx.load("models/yolo12l.onnx")
@@ -22,8 +24,6 @@ image_sender_onnx = model_to_onnx(
     OPSET=19
     )
 
-# image sender must connect to yolo and rtdetr inputs
-
 yolo_and_rtdetr = combine(
     onnx_graphs=[
         image_sender_onnx,
@@ -41,3 +41,36 @@ yolo_and_rtdetr = combine(
     ],
     output_onnx_file_path="onnx_folder/yolo_and_rtdetr.onnx",
 )
+yolo_and_rtdetr = rename(old_new=[yolo_and_rtdetr.graph.input[0].name, "image"], onnx_graph=yolo_and_rtdetr)
+yolo_and_rtdetr = rename(old_new=[yolo_and_rtdetr.graph.output[0].name, "yolo_out"], onnx_graph=yolo_and_rtdetr)
+yolo_and_rtdetr = rename(old_new=[yolo_and_rtdetr.graph.output[1].name, "rtdetr_out"], onnx_graph=yolo_and_rtdetr)
+
+os.remove("onnx_folder/image_splitter.onnx")
+yolo_and_rtdetr = onnx.shape_inference.infer_shapes(yolo_and_rtdetr)
+yolo_and_rtdetr, check  = simplify(yolo_and_rtdetr)
+print(f"Simplified: {check}")
+onnx.save(yolo_and_rtdetr, "onnx_folder/yolo_and_rtdetr.onnx")
+
+Ensemble_postprocess_onnx = model_to_onnx(
+    model=Ensemble_postprocess(),
+    onnx_name="Ensemble_postprocess.onnx",
+    input_shape=[
+        (1,84,8400),
+        (1,300,84),
+    ],    
+    input_names=["yolo_in", "rtdetr_in"],
+    output_names=["boxes_and_scores"],
+    OPSET=19
+)
+
+YOLO12_RTDETR_ensemble_model = combine(
+    onnx_graphs=[
+        yolo_and_rtdetr,
+        Ensemble_postprocess_onnx
+    ],
+    srcop_destop=[
+        ["yolo_out", "yolo_in", "rtdetr_out", "rtdetr_in"],
+    ],
+    output_onnx_file_path="onnx_folder/YOLO12-RTDETR_ensemble_model.onnx",
+)
+
