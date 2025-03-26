@@ -39,6 +39,8 @@ Her iki model için [**TorchFiles/models.py**](TorchFiles/models.py) dosyasında
 
 RTDETR ve YOLO12 modelleri yukarıda belirtilen fonksiyonlar ile birleştirilmiştir. Birleştirme işlemi modellerin saf çıkışları üzerinden olmuştur. **Feature-fusion** kullanılmammıştır.
 
+## ONNX Modeller:
+
 #### yolo_out_splitter
 ![yolo_out_splitter](assests/yolo_out_splitter.onnx.svg)
 #### rtdetr_out_splitter
