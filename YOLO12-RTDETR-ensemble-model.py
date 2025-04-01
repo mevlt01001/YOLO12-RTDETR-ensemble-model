@@ -74,3 +74,10 @@ YOLO12_RTDETR_ensemble_model = combine(
     output_onnx_file_path="onnx_folder/YOLO12-RTDETR_ensemble_model.onnx",
 )
 
+file, check = simplify(YOLO12_RTDETR_ensemble_model)
+onnx.save(file, "onnx_folder/YOLO12-RTDETR_ensemble_model.onnx")
+file = onnx.load("onnx_folder/YOLO12-RTDETR_ensemble_model.onnx")
+print(f"Simplified(1/2): {check}")
+file, check = simplify(file)
+onnx.save(file, "onnx_folder/YOLO12-RTDETR_ensemble_model.onnx")
+print(f"Simplified(2/2): {check}")
