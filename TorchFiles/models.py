@@ -36,17 +36,19 @@ class cxcywh2xyxy(torch.nn.Module):
         return xyxy
     
 class NMS(torch.nn.Module):
-    def __init__(self):
+    def __init__(self, score_threshold=0.5, iou_threshold=0.5):
         super(NMS, self).__init__()
+        self.score_threshold = score_threshold
+        self.iou_threshold = iou_threshold
 
     def forward(self, xyxy, person_conf):
         # xyxy shape: [N,4]
         # person_conf shape: [N]
-        selected_indices = torchvision.ops.nms(xyxy, person_conf, iou_threshold=0.5) # [N]
+        selected_indices = torchvision.ops.nms(xyxy, person_conf, iou_threshold=self.iou_threshold) # [N]
         xyxy = xyxy[selected_indices] # [M,4]
         person_conf = person_conf[selected_indices] # [M]
         boxes_and_scores = torch.cat((xyxy, person_conf.unsqueeze(1)), dim=1) # [M,5]
-        boxes_and_scores = boxes_and_scores[boxes_and_scores[:,4] >= 0.5]
+        boxes_and_scores = boxes_and_scores[boxes_and_scores[:,4] >= self.score_threshold]
         return boxes_and_scores
 
 class image_sender(torch.nn.Module):
@@ -58,11 +60,11 @@ class image_sender(torch.nn.Module):
         return image, image
     
 class RTDETR_postprocess(torch.nn.Module):
-    def __init__(self):
+    def __init__(self, score_threshold=0.5, iou_threshold=0.5):
         super(RTDETR_postprocess, self).__init__()
         self.rtdetr_out_splitter = rtdetr_out_splitter()
         self.cxcywh2xyxy = cxcywh2xyxy()
-        self.NMS = NMS()
+        self.NMS = NMS(score_threshold, iou_threshold)
 
     def forward(self, rtdetr_raw_out):
         # rtdetr_raw_out shape: [1,300,84]
@@ -72,11 +74,11 @@ class RTDETR_postprocess(torch.nn.Module):
         return boxes_and_scores
     
 class YOLO_postprocess(torch.nn.Module):
-    def __init__(self):
+    def __init__(self, score_threshold=0.5, iou_threshold=0.5):
         super(YOLO_postprocess, self).__init__()
         self.yolo_out_splitter = yolo_out_splitter()
         self.cxcywh2xyxy = cxcywh2xyxy()
-        self.NMS = NMS()
+        self.NMS = NMS(score_threshold, iou_threshold)
 
     def forward(self, yolo_raw_out):
         # yolo_raw_out shape: [1,84,8400]
@@ -86,12 +88,12 @@ class YOLO_postprocess(torch.nn.Module):
         return boxes_and_scores
     
 class Ensemble_postprocess(torch.nn.Module):
-    def __init__(self):
+    def __init__(self, score_threshold=0.5, iou_threshold=0.5):
         super(Ensemble_postprocess, self).__init__()
         self.yolo_out_splitter = yolo_out_splitter()
         self.rtdetr_out_splitter = rtdetr_out_splitter()
         self.cxcywh2xyxy = cxcywh2xyxy()
-        self.NMS = NMS()
+        self.NMS = NMS(score_threshold, iou_threshold)
 
     def forward(self, yolo_raw_out, rtdetr_raw_out):
         # yolo_raw_out shape: [1,84,8400]
