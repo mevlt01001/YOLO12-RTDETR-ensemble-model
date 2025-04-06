@@ -52,7 +52,7 @@ print(f"Simplified: {check}")
 onnx.save(yolo_and_rtdetr, "onnx_folder/yolo_and_rtdetr.onnx")
 
 Ensemble_postprocess_onnx = convert(
-    model=Ensemble_postprocess(),
+    model=Ensemble_postprocess(score_threshold=0.5, iou_threshold=0.7),
     onnx_name="Ensemble_postprocess.onnx",
     input_shape=[
         (1,84,8400),

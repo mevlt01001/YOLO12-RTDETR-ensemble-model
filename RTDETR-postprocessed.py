@@ -7,7 +7,7 @@ from TorchFiles import RTDETR_postprocess
 raw_rtdetr_onnx = onnx.load("models/rtdetr-l.onnx")
 
 RTDETR_postprocess_onnx = convert(
-    model=RTDETR_postprocess(score_threshold=0.4, iou_threshold=0.5),
+    model=RTDETR_postprocess(score_threshold=0.5, iou_threshold=0.7),
     onnx_name="RTDETR_postprocess.onnx",
     input_shape=[(1,300,84)],    
     input_names=["rtdetr_raw_out"],
