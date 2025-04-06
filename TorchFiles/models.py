@@ -46,7 +46,7 @@ class NMS(torch.nn.Module):
         xyxy = xyxy[selected_indices] # [M,4]
         person_conf = person_conf[selected_indices] # [M]
         boxes_and_scores = torch.cat((xyxy, person_conf.unsqueeze(1)), dim=1) # [M,5]
-        boxes_and_scores = boxes_and_scores[boxes_and_scores[:,4] >= 0.25]
+        boxes_and_scores = boxes_and_scores[boxes_and_scores[:,4] >= 0.4]
         return boxes_and_scores
 
 class image_sender(torch.nn.Module):
