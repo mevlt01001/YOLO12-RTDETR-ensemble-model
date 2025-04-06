@@ -8,7 +8,7 @@ from TorchFiles import YOLO_postprocess
 raw_yolo_onnx = onnx.load("models/yolo12l.onnx")
 
 YOLO_postprocess_onnx = convert(
-    model=YOLO_postprocess(score_threshold=0.65, iou_threshold=0.5),
+    model=YOLO_postprocess(score_threshold=0.6, iou_threshold=0.5),
     onnx_name="YOLO_postprocess.onnx",
     input_shape=[(1,84,8400)],    
     input_names=["yolo_raw_out"],
