@@ -6,9 +6,9 @@ from TorchFiles import YOLO_postprocess
 
 
 raw_yolo_onnx = onnx.load("models/yolo12l.onnx")
-
+postprocess = YOLO_postprocess(score_threshold=0.5, iou_threshold=0.7)
 YOLO_postprocess_onnx = convert(
-    model=YOLO_postprocess(score_threshold=0.5, iou_threshold=0.7),
+    model=postprocess,
     onnx_name="YOLO_postprocess.onnx",
     input_shape=[(1,84,8400)],    
     input_names=["yolo_raw_out"],
@@ -24,11 +24,10 @@ YOLO12_postprocessed = combine(
     srcop_destop=[
         [raw_yolo_onnx.graph.output[0].name, YOLO_postprocess_onnx.graph.input[0].name]
     ],
-    output_onnx_file_path="onnx_folder/YOLO12_postprocessed.onnx"
 )
 
 os.remove("onnx_folder/YOLO_postprocess.onnx")
 YOLO12_postprocessed = onnx.shape_inference.infer_shapes(YOLO12_postprocessed)
 YOLO12_postprocessed, check  = simplify(YOLO12_postprocessed)
 print(f"Simplified: {check}")
-onnx.save(YOLO12_postprocessed, "onnx_folder/YOLO12_postprocessed.onnx")
+onnx.save(YOLO12_postprocessed, f"onnx_folder/YOLO12_postprocessed_{postprocess.NMS.score_threshold}_{postprocess.NMS.iou_threshold}.onnx")

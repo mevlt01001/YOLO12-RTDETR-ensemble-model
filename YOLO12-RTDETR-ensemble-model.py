@@ -39,7 +39,6 @@ yolo_and_rtdetr = combine(
         ["image1", "yolo_in"],
         ["sender_image2", "rtdetr_in"],
     ],
-    output_onnx_file_path="onnx_folder/yolo_and_rtdetr.onnx",
 )
 yolo_and_rtdetr = rename(old_new=[yolo_and_rtdetr.graph.input[0].name, "image"], onnx_graph=yolo_and_rtdetr)
 yolo_and_rtdetr = rename(old_new=[yolo_and_rtdetr.graph.output[0].name, "yolo_out"], onnx_graph=yolo_and_rtdetr)
@@ -51,8 +50,9 @@ yolo_and_rtdetr, check  = simplify(yolo_and_rtdetr)
 print(f"Simplified: {check}")
 onnx.save(yolo_and_rtdetr, "onnx_folder/yolo_and_rtdetr.onnx")
 
+postprocess = Ensemble_postprocess(score_threshold=0.5, iou_threshold=0.7)
 Ensemble_postprocess_onnx = convert(
-    model=Ensemble_postprocess(score_threshold=0.5, iou_threshold=0.7),
+    model=postprocess,
     onnx_name="Ensemble_postprocess.onnx",
     input_shape=[
         (1,84,8400),
@@ -71,7 +71,6 @@ YOLO12_RTDETR_ensemble_model = combine(
     srcop_destop=[
         ["yolo_out", "yolo_in", "rtdetr_out", "rtdetr_in"],
     ],
-    output_onnx_file_path="onnx_folder/YOLO12-RTDETR_ensemble_model.onnx",
 )
 
 os.remove("onnx_folder/yolo_and_rtdetr.onnx")
@@ -79,4 +78,4 @@ os.remove("onnx_folder/Ensemble_postprocess.onnx")
 YOLO12_RTDETR_ensemble_model = onnx.shape_inference.infer_shapes(YOLO12_RTDETR_ensemble_model)
 YOLO12_RTDETR_ensemble_model, check  = simplify(YOLO12_RTDETR_ensemble_model)
 print(f"Simplified: {check}")
-onnx.save(YOLO12_RTDETR_ensemble_model, "onnx_folder/YOLO12-RTDETR_ensemble_model.onnx")
+onnx.save(YOLO12_RTDETR_ensemble_model, f"onnx_folder/YOLO12-RTDETR_ensemble_model_{postprocess.NMS.score_threshold}_{postprocess.NMS.iou_threshold}.onnx")
