@@ -1,4 +1,5 @@
-import onnx
+import onnx,os
+from onnxsim import simplify
 from snc4onnx import combine
 from models_to_onnx import convert
 from TorchFiles import YOLO_postprocess
@@ -23,5 +24,11 @@ YOLO12_postprocessed = combine(
     srcop_destop=[
         [raw_yolo_onnx.graph.output[0].name, YOLO_postprocess_onnx.graph.input[0].name]
     ],
-    output_onnx_file_path="onnx_folder/YOLO_postprocessed.onnx"
+    output_onnx_file_path="onnx_folder/YOLO12_postprocessed.onnx"
 )
+
+os.remove("onnx_folder/YOLO_postprocess.onnx")
+YOLO12_postprocessed = onnx.shape_inference.infer_shapes(YOLO12_postprocessed)
+YOLO12_postprocessed, check  = simplify(YOLO12_postprocessed)
+print(f"Simplified: {check}")
+onnx.save(YOLO12_postprocessed, "onnx_folder/YOLO12_postprocessed.onnx")

@@ -1,4 +1,5 @@
 import onnx ,os
+from onnxsim import simplify
 from snc4onnx import combine
 from models_to_onnx import convert
 from TorchFiles import RTDETR_postprocess
@@ -24,3 +25,9 @@ RTDETR_postprocessed = combine(
     ],
     output_onnx_file_path="onnx_folder/RTDETR_postprocessed.onnx"
 )
+
+os.remove("onnx_folder/RTDETR_postprocess.onnx")
+RTDETR_postprocessed = onnx.shape_inference.infer_shapes(RTDETR_postprocessed)
+RTDETR_postprocessed, check  = simplify(RTDETR_postprocessed)
+print(f"Simplified: {check}")
+onnx.save(RTDETR_postprocessed, "onnx_folder/RTDETR_postprocessed.onnx")

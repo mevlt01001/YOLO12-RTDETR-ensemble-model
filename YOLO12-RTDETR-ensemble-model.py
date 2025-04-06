@@ -74,10 +74,9 @@ YOLO12_RTDETR_ensemble_model = combine(
     output_onnx_file_path="onnx_folder/YOLO12-RTDETR_ensemble_model.onnx",
 )
 
-file, check = simplify(YOLO12_RTDETR_ensemble_model)
-onnx.save(file, "onnx_folder/YOLO12-RTDETR_ensemble_model.onnx")
-file = onnx.load("onnx_folder/YOLO12-RTDETR_ensemble_model.onnx")
-print(f"Simplified(1/2): {check}")
-file, check = simplify(file)
-onnx.save(file, "onnx_folder/YOLO12-RTDETR_ensemble_model.onnx")
-print(f"Simplified(2/2): {check}")
+os.remove("onnx_folder/yolo_and_rtdetr.onnx")
+os.remove("onnx_folder/Ensemble_postprocess.onnx")
+YOLO12_RTDETR_ensemble_model = onnx.shape_inference.infer_shapes(YOLO12_RTDETR_ensemble_model)
+YOLO12_RTDETR_ensemble_model, check  = simplify(YOLO12_RTDETR_ensemble_model)
+print(f"Simplified: {check}")
+onnx.save(YOLO12_RTDETR_ensemble_model, "onnx_folder/YOLO12-RTDETR_ensemble_model.onnx")
