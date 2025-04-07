@@ -4,7 +4,7 @@ from onnxsim import simplify
 from snc4onnx import combine
 from sor4onnx import rename
 from models_to_onnx import convert
-from TorchFiles import image_sender, Ensemble_postprocess
+from TorchFiles import image_sender, Ensemble_postprocess, Ensemble_postprocess_triple_NMS
 
 
 raw_yolo_onnx = onnx.load("models/yolo12l.onnx")
@@ -51,8 +51,17 @@ print(f"Simplified: {check}")
 onnx.save(yolo_and_rtdetr, "onnx_folder/yolo_and_rtdetr.onnx")
 
 postprocess = Ensemble_postprocess(score_threshold=0.35, iou_threshold=0.55)
+postprocess_triple_NMS = Ensemble_postprocess_triple_NMS(
+    rtdetr_score_threshold=0.4,
+    rtdetr_iou_threshold=0.55,
+    yolo_score_threshold=0.22,
+    yolo_iou_threshold=0.55,
+    score_threshold=0.35,
+    iou_threshold=0.55
+)
+
 Ensemble_postprocess_onnx = convert(
-    model=postprocess,
+    model=postprocess_triple_NMS,
     onnx_name="Ensemble_postprocess.onnx",
     input_shape=[
         (1,84,8400),
@@ -78,4 +87,4 @@ os.remove("onnx_folder/Ensemble_postprocess.onnx")
 YOLO12_RTDETR_ensemble_model = onnx.shape_inference.infer_shapes(YOLO12_RTDETR_ensemble_model)
 YOLO12_RTDETR_ensemble_model, check  = simplify(YOLO12_RTDETR_ensemble_model)
 print(f"Simplified: {check}")
-onnx.save(YOLO12_RTDETR_ensemble_model, f"onnx_folder/YOLO12-RTDETR_ensemble_model_{postprocess.NMS.score_threshold}_{postprocess.NMS.iou_threshold}.onnx")
+onnx.save(YOLO12_RTDETR_ensemble_model, f"onnx_folder/RY_{postprocess_triple_NMS.rtdetr_postprocess.NMS.score_threshold}_{postprocess_triple_NMS.rtdetr_postprocess.NMS.iou_threshold}_{postprocess_triple_NMS.yolo_postprocess.NMS.score_threshold}_{postprocess_triple_NMS.yolo_postprocess.NMS.iou_threshold}_{postprocess_triple_NMS.NMS.score_threshold}_{postprocess_triple_NMS.NMS.iou_threshold}.onnx")

@@ -158,10 +158,10 @@ class Ensemble_postprocess(torch.nn.Module):
         return boxes_and_scores
 
 class Ensemble_postprocess_triple_NMS(torch.nn.Module):
-    def __init__(self, yolo_score_threshold=0.5, yolo_iou_threshold=0.5, rtdetr_score_threshold=0.5, rtdetr_iou_threshold=0.5):
+    def __init__(self, yolo_score_threshold=0.5, yolo_iou_threshold=0.5, rtdetr_score_threshold=0.5, rtdetr_iou_threshold=0.5, score_threshold=0.5, iou_threshold=0.5):
         super(Ensemble_postprocess_triple_NMS, self).__init__()
-        self.yolo_postprocess = YOLO_postprocess(score_threshold, iou_threshold)
-        self.rtdetr_postprocess = RTDETR_postprocess(score_threshold, iou_threshold)
+        self.yolo_postprocess = YOLO_postprocess(yolo_score_threshold, yolo_iou_threshold)
+        self.rtdetr_postprocess = RTDETR_postprocess(rtdetr_score_threshold, rtdetr_iou_threshold)
         self.NMS = NMS(score_threshold, iou_threshold)
 
     def forward(self, yolo_raw_out, rtdetr_raw_out):
@@ -169,5 +169,7 @@ class Ensemble_postprocess_triple_NMS(torch.nn.Module):
         # rtdetr_raw_out shape: [1,300,84]
         yolo_boxes_and_scores = self.yolo_postprocess(yolo_raw_out)
         rtdetr_boxes_and_scores = self.rtdetr_postprocess(rtdetr_raw_out)
-        boxes_and_scores = self.NMS(yolo_boxes_and_scores, rtdetr_boxes_and_scores)
+        xyxy = torch.cat((yolo_boxes_and_scores[:, :4], rtdetr_boxes_and_scores[:, :4]), dim=0)
+        person_conf = torch.cat((yolo_boxes_and_scores[:, 4], rtdetr_boxes_and_scores[:, 4]), dim=0)
+        boxes_and_scores = self.NMS(xyxy, person_conf)
         return boxes_and_scores
