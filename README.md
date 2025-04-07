@@ -56,3 +56,27 @@ RTDETR ve YOLO12 modelleri yukarıda belirtilen fonksiyonlar ile birleştirilmi�
 #### Ensemble_postprocess = yolo_out_splitter + rtdetr_out_splitter + cxcywh2xyxy + NMS
 ![Ensemble_postprocess](assests/Ensemble_postprocess.onnx.svg)
 
+## ONNX to TensorRT
+
+Daha hızlı inference almak için mantıksal bağlanmış katmanları fiziksel bağlanmış ve GPU ya özgü düzenlenmiş `engine` formatında çalıştırılmıştır.
+
+Bu çevrim [TensorRT inference]() reposu kullanılarak yapılmıştır.
+
+*GTX1650TI GPU kullanılmıştır (**CUDA Capability:7.5**) Değerlendirmelerde göz önünde bulundurulmalıdır* 
+
+## Model AP/FPS/GPU Değerlendirilmesi
+
+Modeller birleştirilemden önce ve birleştirildikten sonraki Tek sınıf(Person) üzerinden AP değeri, [TensorRT inference]() reposundan elde edilen Latency ve GPU-Kullanımı bilgileri, [Average Precision]() reposunda işlenmiş ve çıktılar üretilmiştir.
+
+**R: RTDETR_(scoreThreshold_iouThreshold)**\
+**Y:YOLO12_(scoreThreshold_iouThreshold)**\
+**RY:RTDETRYOLO12Ensemble_(RscoreThreshold_RIouThreshold_YScoreThreshold_YIouThreshold_RYScoreThreshold_RYIouThreshold)**
+
+
+### AP Değerleri
+![All_models_AP](assests/All_models_AP.png)
+### FPS Değerleri 
+![All_models_FPS](assests/All_models_FPS.png)
+### GPU Kullanımı
+![All_models_mem](assests/All_models_mem.png)\
+![All_models_power](assests/All_models_power.png)
