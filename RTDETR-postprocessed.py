@@ -5,7 +5,7 @@ from models_to_onnx import convert
 from TorchFiles import RTDETR_postprocess
 
 raw_rtdetr_onnx = onnx.load("models/rtdetr-l.onnx")
-postprocess = RTDETR_postprocess(score_threshold=0.5, iou_threshold=0.7)
+postprocess = RTDETR_postprocess(score_threshold=0.35, iou_threshold=0.55)
 
 RTDETR_postprocess_onnx = convert(
     model=postprocess,

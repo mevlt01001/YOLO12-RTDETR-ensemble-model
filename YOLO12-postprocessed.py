@@ -6,7 +6,7 @@ from TorchFiles import YOLO_postprocess
 
 
 raw_yolo_onnx = onnx.load("models/yolo12l.onnx")
-postprocess = YOLO_postprocess(score_threshold=0.5, iou_threshold=0.7)
+postprocess = YOLO_postprocess(score_threshold=0.35, iou_threshold=0.55)
 YOLO_postprocess_onnx = convert(
     model=postprocess,
     onnx_name="YOLO_postprocess.onnx",

@@ -50,7 +50,7 @@ yolo_and_rtdetr, check  = simplify(yolo_and_rtdetr)
 print(f"Simplified: {check}")
 onnx.save(yolo_and_rtdetr, "onnx_folder/yolo_and_rtdetr.onnx")
 
-postprocess = Ensemble_postprocess(score_threshold=0.5, iou_threshold=0.7)
+postprocess = Ensemble_postprocess(score_threshold=0.35, iou_threshold=0.55)
 Ensemble_postprocess_onnx = convert(
     model=postprocess,
     onnx_name="Ensemble_postprocess.onnx",
