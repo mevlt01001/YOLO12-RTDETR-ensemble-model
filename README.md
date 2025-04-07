@@ -1,5 +1,8 @@
 # YOLO12-RTDETR-ensemble-model
+
 Bu repository; Torch modellerinin ONNX formatına dönüşümünü, ONNX fomratında modellere post-process katmanının eklenmesini ve ONNX fomratında 2 ayrı modelin birlikte çalıştırılmasını ele alır.
+
+ Ayrıca bu birleşmiş model [ONNX2TensorRTInference](https://github.com/mevlt01001/Ensemble-Model-Inference) ile TensorRT Engine Formatında çalıştırılmış ve [Average-Precision](https://github.com/mevlt01001/average_precision) sayeisnde AP/FPS/GPU-Usage değerleri görselleştirilmiştir.
 
 ## Fast-CheckOut
 
@@ -91,13 +94,13 @@ Bbox kutularını alır ve önce belirlenen IoU eşik sınırı üzerindeki kutu
 
 Daha hızlı inference almak için mantıksal bağlanmış katmanları fiziksel bağlanmış ve GPU ya özgü düzenlenmiş `engine` formatında çalıştırılmıştır.
 
-Bu çevrim [TensorRT inference]() reposu kullanılarak yapılmıştır.
+Bu çevrim [TensorRT inference](https://github.com/mevlt01001/Ensemble-Model-Inference) reposu kullanılarak yapılmıştır.
 
 *GTX1650TI GPU kullanılmıştır (**CUDA Capability:7.5**) Değerlendirmelerde göz önünde bulundurulmalıdır* 
 
 ## Model AP/FPS/GPU Değerlendirilmesi
 
-Modeller birleştirilemden önce ve birleştirildikten sonraki Tek sınıf(Person) üzerinden AP değeri, [TensorRT inference]() reposundan elde edilen Latency ve GPU-Kullanımı bilgileri, [Average Precision]() reposunda işlenmiş ve çıktılar üretilmiştir.
+Modeller birleştirilemden önce ve birleştirildikten sonraki Tek sınıf(Person) üzerinden AP değeri, [TensorRT inference](https://github.com/mevlt01001/Ensemble-Model-Inference) reposundan elde edilen Latency ve GPU-Kullanımı bilgileri, [Average Precision](https://github.com/mevlt01001/average_precision) reposunda işlenmiş ve çıktılar üretilmiştir.
 
 **R: RTDETR_(scoreThreshold_iouThreshold)**\
 **Y:YOLO12_(scoreThreshold_iouThreshold)**\
