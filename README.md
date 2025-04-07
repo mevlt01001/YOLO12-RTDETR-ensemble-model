@@ -1,6 +1,29 @@
 # YOLO12-RTDETR-ensemble-model
 Bu repository; Torch modellerinin ONNX formatına dönüşümünü, ONNX fomratında modellere post-process katmanının eklenmesini ve ONNX fomratında 2 ayrı modelin birlikte çalıştırılmasını ele alır.
 
+## Fast-CheckOut
+
+- [Post-Process İşlemleri](#post-process-işlemleri)
+- [ONNX İşlemleri](#onnx-işlemleri)
+  - [Model2ONNX](#model2onnx)
+  - [Yeniden İsimlendirme](#yeniden-isimlendirme)
+  - [ONNX Birleştirme](#onnx-birleştirme)
+- [Ensemble Model](#ensemble-model)
+- [ONNX Modeller](#onnx-modeller)
+  - [yolo_out_splitter](#yolo_out_splitter)
+  - [rtdetr_out_splitter](#rtdetr_out_splitter)
+  - [cxcywh2xyxy](#cxcywh2xyxy)
+  - [NMS](#nms)
+  - [YOLO_postprocess](#yolo_postprocess--yolo_out_splitter--cxcywh2xyxy--nms)
+  - [RTDETR_postprocess](#rtdetr_postprocess--rtdetr_out_splitter--cxcywh2xyxy--nms)
+  - [Ensemble_postprocess](#ensemble_postprocess--yolo_out_splitter--rtdetr_out_splitter--cxcywh2xyxy--nms)
+- [ONNX to TensorRT](#onnx-to-tensorrt)
+- [Model AP/FPS/GPU Değerlendirilmesi](#model-apfpsgpu-değerlendirilmesi)
+  - [AP Değerleri](#ap-değerleri)
+  - [FPS Değerleri](#fps-değerleri)
+  - [GPU Kullanımı](#gpu-kullanımı)
+
+
 ## Modeller:
 
 Çalışma; `rtdetr-l.pt` ve `yolo12l.pt` modellerinin [**Ultralytics**]("https://github.com/ultralytics") kütüphanesi kullanılarak **ONNX** formatına dönüştürülmesi ile başlar.
@@ -42,12 +65,20 @@ RTDETR ve YOLO12 modelleri yukarıda belirtilen fonksiyonlar ile birleştirilmi�
 ## ONNX Modeller:
 
 #### yolo_out_splitter
+RAW YOLO12 çıkışını **cxcywh**,**person_conf** olarak 2 ye ayırır
+
 ![yolo_out_splitter](assests/yolo_out_splitter.onnx.svg)
 #### rtdetr_out_splitter
+RAW RTDETR çıkışını **cxcywh**,**person_conf** olarak 2 ye ayırır
+
 ![rtdetr_out_splitter](assests/rtdetr_out_splitter.onnx.svg)
 #### cxcywh2xyxy
+Bbox fomatını **cxcywh**'dan **x1y1x2y2** formatına dönüştürür. (NMS için gerekli)
+
 ![cxcywh2xyxy](assests/cxcywh2xyxy.onnx.svg)
 #### NMS
+Bbox kutularını alır ve önce belirlenen IoU eşik sınırı üzerindeki kutuları sonra Confidence score eşikleme uygulayarak eşik değerinin altındaki kutuları filtreler.
+
 ![NMS](assests/NMS.onnx.svg)
 #### YOLO_postprocess = yolo_out_splitter + cxcywh2xyxy + NMS
 ![YOLO_postprocess](assests/YOLO_postprocess.onnx.svg)
