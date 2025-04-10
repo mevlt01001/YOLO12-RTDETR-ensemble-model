@@ -16,6 +16,7 @@ RTDETR_postprocess_onnx = convert(
     output_names=["boxes_and_scores"],
     OPSET=19
 )
+os.remove("onnx_folder/RTDETR_postprocess.onnx")
 
 RTDETR_postprocessed = combine(
     onnx_graphs=[
@@ -27,7 +28,6 @@ RTDETR_postprocessed = combine(
     ],
 )
 
-os.remove("onnx_folder/RTDETR_postprocess.onnx")
 RTDETR_postprocessed = onnx.shape_inference.infer_shapes(RTDETR_postprocessed)
 RTDETR_postprocessed, check  = simplify(RTDETR_postprocessed)
 print(f"Simplified: {check}")

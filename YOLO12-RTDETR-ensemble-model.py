@@ -6,6 +6,15 @@ from sor4onnx import rename
 from models_to_onnx import convert
 from TorchFiles import image_sender, Ensemble_postprocess, Ensemble_postprocess_triple_NMS
 
+score_threshold = 0.4
+iou_threshold = 0.55
+
+yolo_score_threshold = 0.22 if score_threshold is None else score_threshold
+yolo_iou_threshold = 0.55 if iou_threshold is None else iou_threshold
+rtdetr_score_threshold = 0.4 if score_threshold is None else score_threshold
+rtdetr_iou_threshold = 0.55 if iou_threshold is None else iou_threshold
+ensemble_score_threshold = 0.35 if score_threshold is None else score_threshold
+ensemble_iou_threshold = 0.55 if iou_threshold is None else iou_threshold
 
 raw_yolo_onnx = onnx.load("models/yolo12l.onnx")
 raw_yolo_onnx = rename(old_new=["images", "yolo_in"], onnx_graph=raw_yolo_onnx)
@@ -23,6 +32,7 @@ image_sender_onnx = convert(
     output_names=["image1", "image2"],
     OPSET=19
     )
+os.remove("onnx_folder/image_splitter.onnx")
 
 yolo_and_rtdetr = combine(
     onnx_graphs=[
@@ -40,28 +50,29 @@ yolo_and_rtdetr = combine(
         ["sender_image2", "rtdetr_in"],
     ],
 )
+
 yolo_and_rtdetr = rename(old_new=[yolo_and_rtdetr.graph.input[0].name, "image"], onnx_graph=yolo_and_rtdetr)
 yolo_and_rtdetr = rename(old_new=[yolo_and_rtdetr.graph.output[0].name, "yolo_out"], onnx_graph=yolo_and_rtdetr)
 yolo_and_rtdetr = rename(old_new=[yolo_and_rtdetr.graph.output[1].name, "rtdetr_out"], onnx_graph=yolo_and_rtdetr)
 
-os.remove("onnx_folder/image_splitter.onnx")
-yolo_and_rtdetr = onnx.shape_inference.infer_shapes(yolo_and_rtdetr)
-yolo_and_rtdetr, check  = simplify(yolo_and_rtdetr)
-print(f"Simplified: {check}")
-onnx.save(yolo_and_rtdetr, "onnx_folder/yolo_and_rtdetr.onnx")
+postprocess = Ensemble_postprocess(
+    yolo_score_threshold=yolo_score_threshold if score_threshold is None else score_threshold,
+    rtdetr_score_threshold=rtdetr_score_threshold if score_threshold is None else score_threshold,
+    score_threshold=ensemble_score_threshold if score_threshold is None else score_threshold,
+    iou_threshold=ensemble_iou_threshold if iou_threshold is None else iou_threshold
+    )
 
-postprocess = Ensemble_postprocess(score_threshold=0.35, iou_threshold=0.55)
 postprocess_triple_NMS = Ensemble_postprocess_triple_NMS(
-    rtdetr_score_threshold=0.4,
-    rtdetr_iou_threshold=0.55,
-    yolo_score_threshold=0.22,
-    yolo_iou_threshold=0.55,
-    score_threshold=0.35,
-    iou_threshold=0.55
+    rtdetr_score_threshold=rtdetr_score_threshold if score_threshold is None else score_threshold,
+    rtdetr_iou_threshold=rtdetr_iou_threshold if iou_threshold is None else iou_threshold,
+    yolo_score_threshold=yolo_score_threshold if score_threshold is None else score_threshold,
+    yolo_iou_threshold=yolo_iou_threshold if iou_threshold is None else iou_threshold,
+    score_threshold=ensemble_score_threshold if score_threshold is None else score_threshold,
+    iou_threshold=ensemble_iou_threshold if iou_threshold is None else iou_threshold
 )
 
 Ensemble_postprocess_onnx = convert(
-    model=postprocess_triple_NMS,
+    model=postprocess,
     onnx_name="Ensemble_postprocess.onnx",
     input_shape=[
         (1,84,8400),
@@ -71,6 +82,7 @@ Ensemble_postprocess_onnx = convert(
     output_names=["boxes_and_scores"],
     OPSET=19
 )
+os.remove("onnx_folder/Ensemble_postprocess.onnx")
 
 YOLO12_RTDETR_ensemble_model = combine(
     onnx_graphs=[
@@ -82,9 +94,11 @@ YOLO12_RTDETR_ensemble_model = combine(
     ],
 )
 
-os.remove("onnx_folder/yolo_and_rtdetr.onnx")
-os.remove("onnx_folder/Ensemble_postprocess.onnx")
 YOLO12_RTDETR_ensemble_model = onnx.shape_inference.infer_shapes(YOLO12_RTDETR_ensemble_model)
 YOLO12_RTDETR_ensemble_model, check  = simplify(YOLO12_RTDETR_ensemble_model)
 print(f"Simplified: {check}")
-onnx.save(YOLO12_RTDETR_ensemble_model, f"onnx_folder/RY_{postprocess_triple_NMS.rtdetr_postprocess.NMS.score_threshold}_{postprocess_triple_NMS.rtdetr_postprocess.NMS.iou_threshold}_{postprocess_triple_NMS.yolo_postprocess.NMS.score_threshold}_{postprocess_triple_NMS.yolo_postprocess.NMS.iou_threshold}_{postprocess_triple_NMS.NMS.score_threshold}_{postprocess_triple_NMS.NMS.iou_threshold}.onnx")
+onnx.save(YOLO12_RTDETR_ensemble_model,f"""onnx_folder/RY_\
+{postprocess.rtdetr_out_splitter.score_threshold}_{postprocess.NMS.iou_threshold}_\
+{postprocess.yolo_out_splitter.score_threshold}_{postprocess.NMS.iou_threshold}_\
+{postprocess.NMS.score_threshold}_{postprocess.NMS.iou_threshold}.onnx
+""")

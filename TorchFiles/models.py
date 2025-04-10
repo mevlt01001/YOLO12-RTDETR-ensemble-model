@@ -14,12 +14,14 @@ class yolo_out_splitter(torch.nn.Module):
         return cxcywh, person_conf
 
 class yolo_out_splitter_without_score_scaling(torch.nn.Module):
-    def __init__(self):
+    def __init__(self, score_threshold=0.0):
         super(yolo_out_splitter_without_score_scaling, self).__init__()
+        self.score_threshold = score_threshold
 
     def forward(self, yolo_raw_out):
         # yolo_raw_out shape: [1,84,8400]
         yolo_raw_out = yolo_raw_out.permute(0, 2, 1).squeeze(0) # [8400,84]
+        yolo_raw_out = yolo_raw_out[yolo_raw_out[..., 4] > self.score_threshold]
         cxcywh = yolo_raw_out[..., :4] # [8400,4]
         person_conf = yolo_raw_out[..., 4] # [8400]
         return cxcywh, person_conf
@@ -38,12 +40,14 @@ class rtdetr_out_splitter(torch.nn.Module):
         return cxcywh, person_conf
 
 class rtdetr_out_splitter_without_score_scaling(torch.nn.Module):
-    def __init__(self):
+    def __init__(self, score_threshold=0.0):
         super(rtdetr_out_splitter_without_score_scaling, self).__init__()
+        self.score_threshold = score_threshold
 
     def forward(self, rtdetr_raw_out):
         # rtdetr_raw_out shape: [1,300,84]
         rtdetr_raw_out = rtdetr_raw_out.squeeze(0) # [300,84]
+        rtdetr_raw_out = rtdetr_raw_out[rtdetr_raw_out[..., 4] > self.score_threshold]
         cxcywh = rtdetr_raw_out[..., :4] # [300,4] but sclaed 0-1
         cxcywh = cxcywh*640 # [300,4] scaled 0-640
         person_conf = rtdetr_raw_out[..., 4] # [300]
@@ -139,10 +143,15 @@ class YOLO_postprocess_without_score_scaling(torch.nn.Module):
         return boxes_and_scores
 
 class Ensemble_postprocess(torch.nn.Module):
-    def __init__(self, score_threshold=0.5, iou_threshold=0.5):
+    def __init__(self,
+                 yolo_score_threshold: float=None,
+                 rtdetr_score_threshold: float=None,
+                 score_threshold: float=0.5,
+                 iou_threshold: float=0.5
+                 ):
         super(Ensemble_postprocess, self).__init__()
-        self.yolo_out_splitter = yolo_out_splitter()
-        self.rtdetr_out_splitter = rtdetr_out_splitter()
+        self.yolo_out_splitter = yolo_out_splitter() if yolo_score_threshold is None else yolo_out_splitter_without_score_scaling(yolo_score_threshold)
+        self.rtdetr_out_splitter = rtdetr_out_splitter() if rtdetr_score_threshold is None else rtdetr_out_splitter_without_score_scaling(rtdetr_score_threshold)
         self.cxcywh2xyxy = cxcywh2xyxy()
         self.NMS = NMS(score_threshold, iou_threshold)
 
