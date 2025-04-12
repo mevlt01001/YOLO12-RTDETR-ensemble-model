@@ -10,7 +10,7 @@ class yolo_out_splitter(torch.nn.Module):
         yolo_raw_out = yolo_raw_out.permute(0, 2, 1).squeeze(0) # [8400,84]
         cxcywh = yolo_raw_out[..., :4] # [8400,4]
         person_conf = yolo_raw_out[..., 4] # [8400]
-        person_conf = person_conf/person_conf.max()
+        #person_conf = person_conf/person_conf.max()
         return cxcywh, person_conf
 
 class yolo_out_splitter_without_score_scaling(torch.nn.Module):
@@ -71,11 +71,10 @@ class NMS(torch.nn.Module):
     def forward(self, xyxy, person_conf):
         # xyxy shape: [N,4]
         # person_conf shape: [N]
-        selected_indices = torchvision.ops.nms(xyxy, person_conf, iou_threshold=self.iou_threshold) # [N]
-        xyxy = xyxy[selected_indices] # [M,4]
-        person_conf = person_conf[selected_indices] # [M]
         boxes_and_scores = torch.cat((xyxy, person_conf.unsqueeze(1)), dim=1) # [M,5]
         boxes_and_scores = boxes_and_scores[boxes_and_scores[:,4] >= self.score_threshold]
+        selected_indices = torchvision.ops.nms(boxes_and_scores[:, :4], boxes_and_scores[:, 4], iou_threshold=self.iou_threshold) # [N]
+        boxes_and_scores = boxes_and_scores[selected_indices]
         return boxes_and_scores
 
 class image_sender(torch.nn.Module):
