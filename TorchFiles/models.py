@@ -34,7 +34,7 @@ class rtdetr_out_splitter(torch.nn.Module):
         # rtdetr_raw_out shape: [1,300,84]
         rtdetr_raw_out = rtdetr_raw_out.squeeze(0) # [300,84]
         cxcywh = rtdetr_raw_out[..., :4] # [300,4] but sclaed 0-1
-        cxcywh = cxcywh*640 # [300,4] scaled 0-640
+        cxcywh = cxcywh # [300,4] scaled 0-640
         person_conf = rtdetr_raw_out[..., 4] # [300]
         person_conf = person_conf/person_conf.max()
         return cxcywh, person_conf
@@ -61,7 +61,7 @@ class cxcywh2xyxy(torch.nn.Module):
         # cxcywh shape: [N,4]
         xyxy = torchvision.ops.box_convert(cxcywh, 'cxcywh', 'xyxy')
         return xyxy
-    
+
 class NMS(torch.nn.Module):
     def __init__(self, score_threshold=0.5, iou_threshold=0.5):
         super(NMS, self).__init__()
@@ -73,6 +73,19 @@ class NMS(torch.nn.Module):
         # person_conf shape: [N]
         boxes_and_scores = torch.cat((xyxy, person_conf.unsqueeze(1)), dim=1) # [M,5]
         boxes_and_scores = boxes_and_scores[boxes_and_scores[:,4] >= self.score_threshold]
+        selected_indices = torchvision.ops.nms(boxes_and_scores[:, :4], boxes_and_scores[:, 4], iou_threshold=self.iou_threshold) # [N]
+        boxes_and_scores = boxes_and_scores[selected_indices]
+        return boxes_and_scores
+
+class NMS_without_score_thresholding(torch.nn.Module):
+    def __init__(self, iou_threshold=0.5):
+        super(NMS_without_score_thresholding, self).__init__()
+        self.iou_threshold = iou_threshold
+
+    def forward(self, xyxy, person_conf):
+        # xyxy shape: [N,4]
+        # person_conf shape: [N]
+        boxes_and_scores = torch.cat((xyxy, person_conf.unsqueeze(1)), dim=1) # [M,5]
         selected_indices = torchvision.ops.nms(boxes_and_scores[:, :4], boxes_and_scores[:, 4], iou_threshold=self.iou_threshold) # [N]
         boxes_and_scores = boxes_and_scores[selected_indices]
         return boxes_and_scores
@@ -119,6 +132,20 @@ class YOLO_postprocess(torch.nn.Module):
         self.yolo_out_splitter = yolo_out_splitter()
         self.cxcywh2xyxy = cxcywh2xyxy()
         self.NMS = NMS(score_threshold, iou_threshold)
+
+    def forward(self, yolo_raw_out):
+        # yolo_raw_out shape: [1,84,8400]
+        cxcywh, person_conf = self.yolo_out_splitter(yolo_raw_out)
+        xyxy = self.cxcywh2xyxy(cxcywh)
+        boxes_and_scores = self.NMS(xyxy, person_conf)
+        return boxes_and_scores
+
+class YOLO_postprocess_without_score_thresholding(torch.nn.Module):
+    def __init__(self, iou_threshold=0.5):
+        super(YOLO_postprocess_without_score_thresholding, self).__init__()
+        self.yolo_out_splitter = yolo_out_splitter()
+        self.cxcywh2xyxy = cxcywh2xyxy()
+        self.NMS = NMS_without_score_thresholding(iou_threshold)
 
     def forward(self, yolo_raw_out):
         # yolo_raw_out shape: [1,84,8400]

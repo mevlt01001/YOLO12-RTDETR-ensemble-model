@@ -5,7 +5,7 @@ from models_to_onnx import convert
 from TorchFiles import YOLO_postprocess, YOLO_postprocess_without_score_scaling
 
 raw_yolo_onnx = onnx.load("models/yolo12l.onnx")
-postprocess = YOLO_postprocess(score_threshold=0.25, iou_threshold=0.55)
+postprocess = YOLO_postprocess(score_threshold=0.0, iou_threshold=0.55)
 #postprocess_without_score_scaling = YOLO_postprocess_without_score_scaling(score_threshold=0.4, iou_threshold=0.55)
 
 YOLO_postprocess_onnx = convert(
