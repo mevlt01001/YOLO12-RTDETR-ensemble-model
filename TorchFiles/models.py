@@ -26,15 +26,16 @@ class yolo_out_splitter_without_score_scaling(torch.nn.Module):
         person_conf = yolo_raw_out[..., 4] # [8400]
         return cxcywh, person_conf
 
-class yolo_out_splitter_for_INMSLayer(torch.nn.Module):
+class yolo_out_splitter_for_onnx_nms(torch.nn.Module):
     def __init__(self):
-        super(yolo_out_splitter_for_INMSLayer, self).__init__()
+        super(yolo_out_splitter_for_onnx_nms, self).__init__()
 
     def forward(self, x):
         # yolo_raw_out shape: [1,84,8400]
         scores = x[:, 4:5, :]
-        x = torch.reshape(x[:, :4, :], (1,8400, 4))
-        boxes = x        
+        x = torch.reshape(x[:, :4, :], (1, 8400, 4))
+        boxes = x[:, :, :4]
+    
         return boxes, scores
 
 class rtdetr_out_splitter(torch.nn.Module):

@@ -50,4 +50,4 @@ graph = helper.make_graph(
 model = helper.make_model(graph, opset_imports=[helper.make_opsetid("", 19)])
 model.ir_version = 9
 model, check = onnxsim.simplify(model)
-onnx.save(model, "onnx_folder/INMSLayer.onnx")
+onnx.save(model, "onnx_folder/ONNX_NMS.onnx")
